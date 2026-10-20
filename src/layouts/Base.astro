@@ -1,0 +1,79 @@
+---
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { defaultLang, localizePath, locales, ogLocales, useTranslations, type Lang, type RouteKey } from '../i18n/ui';
+import { site } from '../lib/site';
+
+interface Props {
+  lang: Lang;
+  /** Título propio de la página; se completa con el nombre del artista. */
+  title: string;
+  description: string;
+  /** Sección actual: activa el menú, el selector de idioma y los hreflang. */
+  route?: RouteKey;
+  /** Imagen para Open Graph (ruta absoluta o URL). [PENDIENTE: imagen por defecto] */
+  image?: string;
+  noindex?: boolean;
+  /** Datos estructurados schema.org. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { lang, title, description, route, image, noindex = false, jsonLd } = Astro.props;
+const t = useTranslations(lang);
+
+const fullTitle = `${title} · ${site.nombre}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const alternates = route
+  ? locales.map((l) => ({ lang: l, href: new URL(localizePath(route, l), Astro.site).href }))
+  : [];
+const xDefault = route ? new URL(localizePath(route, defaultLang), Astro.site).href : undefined;
+const ogImage = image ? new URL(image, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.nombre} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={ogLocales[lang]} />
+    {locales.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={ogLocales[l]} />)}
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-paper focus:px-4 focus:py-2 focus:text-wood-900 focus:shadow"
+    >
+      {t('a11y.skip')}
+    </a>
+    <Header lang={lang} route={route} />
+    <main id="contenido" tabindex="-1" class="flex-1 focus:outline-none">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

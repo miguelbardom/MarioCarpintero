@@ -1,0 +1,26 @@
+---
+/**
+ * Página de sección provisional: título y aviso de "en construcción".
+ * Las páginas de /en y /es solo indican idioma y sección.
+ */
+import Base from '../layouts/Base.astro';
+import PageHeading from './PageHeading.astro';
+import { useTranslations, type Lang, type RouteKey } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  route: Exclude<RouteKey, 'home'>;
+}
+
+const { lang, route } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} route={route} title={t(`meta.${route}.title`)} description={t(`meta.${route}.description`)}>
+  <PageHeading title={t(`nav.${route}`)} />
+  <div class="mx-auto max-w-6xl px-5 sm:px-8">
+    <slot>
+      <p class="text-muted">{t('page.wip')}</p>
+    </slot>
+  </div>
+</Base>
