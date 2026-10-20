@@ -10,15 +10,15 @@ Secciones: Home · Bio · Schedule · Press · Media · Contact
 
 ## Stack
 
-- **Astro** + TypeScript (modo estricto)
-- **Tailwind CSS** para estilos
-- **Content Collections** de Astro para todo el contenido editable
+- **Astro 7** + TypeScript (modo estricto, `astro/tsconfigs/strict`)
+- **Tailwind CSS 4** vía `@tailwindcss/vite` (sin `tailwind.config`; el tema se define con `@theme` en `src/styles/global.css`) + `@tailwindcss/typography` para textos largos (bio)
+- **Content Collections** de Astro (loader `glob`) para todo el contenido editable. Zod 4: importar siempre `import { z } from 'astro/zod'` (el `z` de `astro:content` está obsoleto)
 - `astro:assets` (`<Image />` / `<Picture />`) para imágenes
 - **PhotoSwipe** para la galería (lightbox)
 - **lite-youtube-embed** para vídeos (y equivalente ligero para Vimeo si hace falta)
-- **Fontsource** para tipografías alojadas localmente
+- **Fontsource** (variables) para tipografías alojadas localmente: `@fontsource-variable/cormorant-garamond` (normal + `wght-italic.css`) e `@fontsource-variable/inter`, importadas en `Base.astro`
 - `@astrojs/sitemap`
-- Formulario de contacto: **[Formspree | Web3Forms]**
+- Formulario de contacto: **[PENDIENTE: Formspree | Web3Forms]** (aún no implementado)
 
 ### Restricciones de stack
 
@@ -30,12 +30,14 @@ Secciones: Home · Bio · Schedule · Press · Media · Contact
 
 ## Configuración clave
 
-- `site` en `astro.config.mjs`: `https://[DOMINIO]`
-- URLs con barra final (`trailingSlash: 'always'`, `build.format: 'directory'`). Mantener coherente en todos los enlaces internos.
+- `site` en `astro.config.mjs`: provisionalmente `https://www.example.com` — **[PENDIENTE: dominio definitivo]**.
+- URLs con barra final (`trailingSlash: 'always'`, `build.format: 'directory'`). Mantener coherente en todos los enlaces internos: generarlos siempre con `localizePath()` (nunca escribir rutas a mano).
 - **Bilingüe desde el inicio** con el enrutado i18n de Astro:
-  - Idiomas: `en` y `es`. Idioma por defecto: **[en | es]**.
-  - Rutas: `/en/...` y `/es/...`, con selector de idioma en el header que lleve a la página equivalente.
-  - Textos de interfaz (menú, botones, etiquetas) en `src/i18n/ui.ts`; nunca hardcodeados en componentes.
+  - Idiomas: `en` y `es`. Idioma por defecto: `en` provisional — **[PENDIENTE: confirmar en | es]**. Si cambia, actualizar a la vez `DEFAULT_LOCALE` en `astro.config.mjs` y `defaultLang` en `src/i18n/ui.ts` (igual con la lista de idiomas: `LOCALES` ↔ `languages`).
+  - `prefixDefaultLocale: true`: todas las páginas llevan prefijo `/en/...` y `/es/...`. La raíz `/` es `src/pages/index.astro`, una redirección estática (meta refresh, `noindex`) al idioma por defecto, excluida del sitemap.
+  - **Slugs traducidos**: cada sección tiene su segmento por idioma en `routes` de `src/i18n/ui.ts` (`/en/schedule/` ↔ `/es/agenda/`, `/en/bio/` ↔ `/es/biografia/`, `/en/contact/` ↔ `/es/contacto/`…). Una sección nueva se añade ahí (y en `navItems` si va en el menú) y con un archivo en `pages/en/` y otro en `pages/es/`.
+  - El selector de idioma y los `hreflang` usan la prop `route` (`RouteKey`) que recibe `Base.astro`; toda página de sección debe pasarla.
+  - Textos de interfaz (menú, botones, etiquetas, títulos y meta descriptions de las páginas) en `ui` de `src/i18n/ui.ts`, con las mismas claves en `en` y `es`; nunca hardcodeados en componentes. Acceso con `useTranslations(lang)`.
   - El contenido de las colecciones tiene versión por idioma cuando aplique (bio, textos de prensa traducidos, notas de conciertos). Datos neutros (fechas, salas, obras) no se duplican.
 
 ## Estructura de carpetas
@@ -46,57 +48,81 @@ src/
 ├── content/
 │   ├── conciertos/        # un .md por concierto: AAAA-MM-DD-ciudad.md
 │   ├── prensa/            # citas de crítica
-│   ├── bio/               # versiones por longitud e idioma
+│   ├── bio/               # en.md y es.md (una sola versión por idioma)
 │   └── media/             # vídeos y audios destacados
 ├── data/
 │   └── site.json          # nombre, redes, emails, management, instrumento
+├── lib/
+│   └── site.ts            # valida site.json con Zod y exporta `site` tipado
 ├── i18n/
-│   └── ui.ts
+│   └── ui.ts              # idiomas, rutas por idioma, textos de interfaz y utilidades
 ├── assets/
 │   └── fotos/             # imágenes optimizadas por Astro
-├── components/
+├── components/            # Header, Footer, PageHeading y la página real de cada sección (HomePage, SectionPage…)
 ├── layouts/
 │   └── Base.astro         # <head>, SEO, header, footer, selector de idioma
 ├── pages/
-│   ├── en/
+│   ├── index.astro        # redirección estática al idioma por defecto
+│   ├── 404.astro          # bilingüe (un único 404.html para todo el sitio)
+│   ├── en/                # envoltorios finos: solo pasan `lang` y `route`
 │   └── es/
 └── styles/
-    └── global.css
+    └── global.css         # Tailwind, @theme (fuentes y paleta), estilos base
 public/
 └── presskit/              # descargables tal cual: fotos HD, bios PDF, rider
 ```
 
 **Regla principal: todo el contenido editable vive en `src/content` o `src/data`.** Ningún texto, fecha, enlace o dato del artista hardcodeado en componentes o páginas. Añadir un concierto, una crítica o un disco debe consistir solo en crear un archivo.
 
+**Páginas por idioma sin duplicar marcado:** los archivos de `src/pages/en/` y `src/pages/es/` solo importan un componente de `src/components/` y le pasan `lang` (y `route`). Toda la lógica y el marcado viven en el componente compartido.
+
 ## Modelo de contenido
 
+Los esquemas viven en `src/content.config.ts`; ante cualquier duda, el esquema manda.
+
+### Convenciones comunes
+- **Textos localizables** (`localizado` en el esquema, tipo `Localized` en `ui.ts`): un campo puede ser una cadena neutra (`ciudad: "Madrid"`) o un objeto por idioma (`ciudad: { en: "Vienna", es: "Viena" }`, al menos una versión). Usar el objeto solo cuando el texto cambia de verdad entre idiomas. Para mostrarlo, siempre `localize(valor, lang)`, que cae al idioma por defecto y luego a la primera versión disponible.
+- Los textos de `site.json` que dependen del idioma (`profesion`, `introHome`, `territorio`…) son siempre `{ en, es }` con ambas versiones.
+- Las cadenas con `[`, `:` o `#` van entre comillas en YAML.
+- Placeholders: `"[PENDIENTE: …]"` como valor y, si el campo tiene formato (código de país, fecha, URL), un comentario YAML `# [PENDIENTE: …]` junto a un valor válido provisional. `esPendiente()` (`src/lib/site.ts`) detecta placeholders para no renderizar enlaces rotos.
+
 ### Conciertos (`conciertos`)
-- `fecha` (datetime, con hora local), `ciudad`, `pais`, `sala`
+- Nombre de archivo: `AAAA-MM-DD-ciudad.md`.
+- `fecha`: **hora local de la sala, sin zona**, como cadena entre comillas: `"2026-11-21T19:30"`. Nunca convertirla a otra zona para mostrarla.
+- `zonaHoraria`: zona IANA de la sala (por defecto `Europe/Madrid`). Sirve para decidir próximo/pasado y para el `startDate` con desfase de schema.org (aún sin implementar).
+- `pais`: código **ISO 3166-1 alfa-2** en mayúsculas (`ES`, `DE`, `GB`). El nombre del país se mostrará traducido con `Intl.DisplayNames` (aún sin implementar); no escribirlo en el archivo.
+- `ciudad`, `sala`: localizables.
 - `rol`: `solista` | `camara` | `recital` | `orquesta` | `otro`
-- `con`: orquesta / ensemble / pianista / director (texto o lista)
-- `programa`: lista de `{ compositor, obra }`
-- `entradas` (URL, opcional), `agotado` (bool, opcional), `cancelado` (bool, opcional)
-- Cuerpo opcional con notas, por idioma si es necesario.
+- `con`: orquesta / ensemble / pianista / director (localizable o lista de localizables)
+- `programa`: lista de `{ compositor, obra }` (`obra` localizable; `compositor` neutro)
+- `entradas` (URL, opcional), `agotado` (bool, por defecto `false`), `cancelado` (bool, por defecto `false`)
+- `notas` (localizable, opcional) en el frontmatter. El cuerpo del `.md` no se usa.
 - Próximos y pasados se separan automáticamente por fecha en tiempo de build. Los pasados se agrupan por temporada (sep–ago, p. ej. "2026/27").
 - Generar datos estructurados schema.org `MusicEvent` para cada concierto próximo.
 
 ### Prensa (`prensa`)
-- `cita` (por idioma si hay traducción), `medio`, `autor` (opcional), `fecha`, `url` (opcional), `destacada` (bool)
+- `cita`: objeto por código de idioma de dos letras; puede incluir el original en cualquier idioma y las traducciones: `cita: { de: "…", en: "…", es: "…" }`.
+- `idiomaOriginal`: idioma en que se publicó la crítica; **debe existir como clave en `cita`** (el esquema lo valida). Al mostrar: la versión en el idioma de la página si existe; si no, el original.
+- `medio`, `autor` (opcional), `fecha` (YAML `AAAA-MM-DD`), `url` (opcional), `destacada` (bool, por defecto `false`)
 - Las destacadas aparecen en la Home.
 
 ### Bio (`bio`)
-- Una sola versión (extensa) por idioma: bio/en.md y bio/es.md. No crear - versiones cortas ni resúmenes.
-- Se muestra completa en la página Bio. En la Home, como mucho un párrafo introductivo propio (definido en site.json o en la Home), nunca un recorte automático de la bio.
-- temporada (p. ej. "2026/27") visible junto a la bio.
+- Una sola versión (extensa) por idioma: bio/en.md y bio/es.md. No crear versiones cortas ni resúmenes. El id de la entrada (`en`/`es`) es el idioma.
+- Se muestra completa en la página Bio. En la Home, como mucho el párrafo introductivo propio `introHome` de `site.json`, nunca un recorte automático de la bio.
+- Frontmatter `temporada` (formato `"2026/27"`), visible junto a la bio.
 
 ### Media (`media`)
-- Vídeos: `plataforma` (youtube | vimeo), `id`, `titulo`, `obra`/`compositor`, `destacado`
-- Audio: enlaces o embeds ligeros.
+- Unión discriminada por `tipo`:
+  - `tipo: video`: `plataforma` (`youtube` | `vimeo`), `id` (solo el ID, no la URL), `titulo` (localizable), `compositor`, `obra` (localizable), `fecha`, `destacado`, `orden`
+  - `tipo: audio`: `plataforma` (`spotify` | `apple-music` | `soundcloud` | `bandcamp` | `otra`), `url`, `titulo`, `compositor`, `obra`, `sello`, `fecha`, `destacado`, `orden`
+- Todo el contenido va en el frontmatter; el cuerpo no se usa.
 
 ### Datos generales (`site.json`)
-- Nombre, email de contacto, redes sociales
-- Management / agencia por territorio (`territorio`, `agencia`, `contacto`, `email`, `web`)
-- Instrumento: constructor, año, cesión (fundación o mecenas), si aplica
+- Se valida al hacer build con el esquema de `src/lib/site.ts`; importar siempre `site` desde ahí, nunca el JSON directamente. Si se añade un campo a `site.json`, añadirlo también al esquema.
+- `nombre`, `profesion` `{ en, es }`, `email`, `introHome` `{ en, es }` (párrafo de la Home)
+- `redes`: lista de `{ red, url, etiqueta? }`, con `red` en `instagram` | `facebook` | `youtube` | `spotify` | `x` | `bluesky` | `linkedin` | `tiktok` | `otra`. Las que siguen pendientes no se muestran.
+- `management`: lista por territorio (`territorio` `{ en, es }`, `agencia`, `contacto`, `email`, `web`)
+- `instrumento` (opcional): `constructor`, `anio`, `cesion` (fundación o mecenas), si aplica
 
 ## Fotos
 
@@ -106,8 +132,12 @@ public/
 ## Diseño
 
 - Estética: estilo clásico, sobrio, luminoso. Mucho espacio en blanco, fotografía protagonista.
-- Tipografía: serif de calidad para títulos (**[Cormorant Garamond | EB Garamond | Playfair Display]**) + sans-serif legible para texto (**[Inter | Source Sans 3]**)
-- Paleta: blanco, detalles asociados a un instrumento como la viola, como el marrón y el dorado.
+- Tipografía: **Cormorant Garamond** para títulos (`font-serif`, peso 500; cursiva disponible para citas) + **Inter** para texto (`font-sans`).
+- Paleta: blanco, detalles asociados a un instrumento como la viola, como el marrón y el dorado. Tokens en `@theme` de `global.css`; usar siempre estos, no colores sueltos:
+  - `paper` (fondo), `ink` (texto), `muted` (texto secundario), `line` (bordes)
+  - `wood-900` / `wood-700` / `wood-500` (títulos, enlaces, hover)
+  - `gold-700` (dorado **para texto**, AA sobre `paper`), `gold-400` (**solo decorativo**: filetes y líneas, no pasa AA como texto), `gold-100` (fondos suaves)
+- Motivos recurrentes: títulos con filete dorado corto debajo (`PageHeading`), etiquetas en versalitas espaciadas (`uppercase tracking-[0.12em]`), contenedor `max-w-6xl` con `px-5 sm:px-8`.
 - Webs de referencia: algunos ejemplos, de manera aproximada, https://www.thomas-dunford.com/, https://www.leadesandre.com/.
 - Mobile-first. Debe verse impecable en móvil, tablet y escritorio.
 - Accesibilidad: contraste AA, navegación por teclado, foco visible, `lang` correcto por página, menú móvil accesible.
@@ -115,8 +145,9 @@ public/
 
 ## SEO
 
-- `<title>` y meta description únicos por página e idioma
-- Open Graph / Twitter cards con imagen por defecto y específica cuando aplique
+- `<title>` y meta description únicos por página e idioma (claves `meta.<sección>.title` / `meta.<sección>.description` en `ui.ts`; `Base.astro` añade ` · Mario Carpintero` al título)
+- Todo lo del `<head>` (canonical, hreflang + `x-default`, Open Graph, Twitter, JSON-LD vía prop `jsonLd`) se genera en `Base.astro`; las páginas solo pasan props.
+- Open Graph / Twitter cards con imagen por defecto (**[PENDIENTE]**) y específica cuando aplique (prop `image`)
 - `hreflang` entre versiones ES/EN y URL canónica
 - schema.org: `Person` (con instrumento y redes) en la Home; `MusicEvent` en conciertos
 - Sitemap generado con `@astrojs/sitemap`
@@ -137,7 +168,7 @@ public/
 - `npm run dev`: servidor de desarrollo
 - `npm run build`: build estático en `dist/`
 - `npm run preview`: previsualizar el build
-- `npx astro check`: comprobación de tipos
+- `npx astro check` (o `npm run check`): comprobación de tipos
 
 ## Despliegue (pendiente de decidir)
 
