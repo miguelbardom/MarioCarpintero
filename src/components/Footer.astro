@@ -1,0 +1,85 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import { esPendiente, site } from '../lib/site';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+const redes = site.redes.filter((r) => !esPendiente(r.url));
+const nombresRedes: Record<string, string> = {
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  youtube: 'YouTube',
+  spotify: 'Spotify',
+  x: 'X',
+  bluesky: 'Bluesky',
+  linkedin: 'LinkedIn',
+  tiktok: 'TikTok',
+};
+---
+
+<footer class="mt-24 border-t border-line text-sm text-muted">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-3">
+    <section aria-labelledby="footer-contacto">
+      <h2 id="footer-contacto" class="mb-3 text-lg">{t('footer.contact')}</h2>
+      {
+        esPendiente(site.email) ? (
+          <p>{site.email}</p>
+        ) : (
+          <a href={`mailto:${site.email}`} class="text-wood-700 hover:text-wood-500">
+            {site.email}
+          </a>
+        )
+      }
+    </section>
+
+    {
+      site.management.length > 0 && (
+        <section aria-labelledby="footer-management">
+          <h2 id="footer-management" class="mb-3 text-lg">
+            {t('footer.management')}
+          </h2>
+          <ul class="space-y-3">
+            {site.management.map((m) => (
+              <li>
+                <span class="block text-xs tracking-widest text-gold-700 uppercase">{m.territorio[lang]}</span>
+                <span class="block text-ink">{m.agencia}</span>
+                {m.email && !esPendiente(m.email) && (
+                  <a href={`mailto:${m.email}`} class="text-wood-700 hover:text-wood-500">
+                    {m.email}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      redes.length > 0 && (
+        <section aria-labelledby="footer-redes">
+          <h2 id="footer-redes" class="mb-3 text-lg">
+            {t('footer.social')}
+          </h2>
+          <ul class="space-y-1">
+            {redes.map((r) => (
+              <li>
+                <a href={r.url} rel="me noopener" class="text-wood-700 hover:text-wood-500">
+                  {r.etiqueta ?? nombresRedes[r.red] ?? r.url}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+  <p class="mx-auto max-w-6xl border-t border-line px-5 py-6 text-xs sm:px-8">
+    © {year} {site.nombre}. {t('footer.rights')}
+  </p>
+</footer>

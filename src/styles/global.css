@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Paleta: blanco cálido, maderas de la viola y dorado. */
+  --color-paper: #fdfcf9;
+  --color-ink: #231c17;
+  --color-muted: #6b5e54; /* texto secundario, AA sobre paper */
+  --color-wood-900: #3a2416;
+  --color-wood-700: #5b3a22;
+  --color-wood-500: #8b5a33;
+  --color-gold-700: #7c5c17; /* dorado para texto: AA sobre paper */
+  --color-gold-400: #c5a050; /* solo decorativo (líneas, filetes) */
+  --color-gold-100: #f4ecd8;
+  --color-line: #e8e0d4;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    line-height: 1.65;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    line-height: 1.15;
+    color: var(--color-wood-900);
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-wood-700);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

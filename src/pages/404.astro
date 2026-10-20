@@ -1,0 +1,32 @@
+---
+/**
+ * Un servidor estático sirve un único 404.html para todo el sitio,
+ * así que el mensaje aparece en ambos idiomas.
+ */
+import Base from '../layouts/Base.astro';
+import { defaultLang, localizePath, locales, ui } from '../i18n/ui';
+
+const t = ui[defaultLang];
+---
+
+<Base lang={defaultLang} title={t['404.title']} description={t['404.text']} noindex>
+  <div class="mx-auto max-w-6xl space-y-12 px-5 pt-14 sm:px-8 lg:pt-20">
+    {
+      locales.map((l, i) => (
+        <section lang={l}>
+          {i === 0 ? (
+            <h1 class="text-4xl sm:text-5xl">{ui[l]['404.title']}</h1>
+          ) : (
+            <h2 class="text-3xl sm:text-4xl">{ui[l]['404.title']}</h2>
+          )}
+          <p class="mt-4 text-muted">{ui[l]['404.text']}</p>
+          <p class="mt-4">
+            <a href={localizePath('home', l)} class="text-wood-700 hover:text-wood-500">
+              {ui[l]['404.back']}
+            </a>
+          </p>
+        </section>
+      ))
+    }
+  </div>
+</Base>

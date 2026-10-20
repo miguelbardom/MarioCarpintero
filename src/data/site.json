@@ -1,0 +1,27 @@
+{
+  "nombre": "Mario Carpintero",
+  "profesion": { "en": "Violist", "es": "Violista" },
+  "email": "[PENDIENTE: email de contacto]",
+  "introHome": {
+    "en": "[PENDIENTE: short introductory paragraph for the home page]",
+    "es": "[PENDIENTE: párrafo introductorio breve para la portada]"
+  },
+  "redes": [
+    { "red": "instagram", "url": "[PENDIENTE: URL de Instagram]" },
+    { "red": "youtube", "url": "[PENDIENTE: URL del canal de YouTube]" }
+  ],
+  "management": [
+    {
+      "territorio": { "en": "[PENDIENTE: territory]", "es": "[PENDIENTE: territorio]" },
+      "agencia": "[PENDIENTE: agencia]",
+      "contacto": "[PENDIENTE: persona de contacto]",
+      "email": "[PENDIENTE: email de la agencia]",
+      "web": "[PENDIENTE: web de la agencia]"
+    }
+  ],
+  "instrumento": {
+    "constructor": "[PENDIENTE: constructor de la viola]",
+    "anio": "[PENDIENTE: año]",
+    "cesion": "[PENDIENTE: fundación o mecenas que cede el instrumento, si aplica]"
+  }
+}
