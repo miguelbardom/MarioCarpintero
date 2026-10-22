@@ -1,0 +1,45 @@
+---
+/**
+ * Foto de la colección `fotos` con alt por idioma y crédito.
+ * Genera AVIF/WebP en varios anchos vía astro:assets.
+ */
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+  foto: CollectionEntry<'fotos'>;
+  lang: Lang;
+  /** Atributo `sizes` según el ancho que ocupa en la maqueta. */
+  sizes: string;
+  /** true para la imagen principal visible al cargar (LCP). */
+  prioridad?: boolean;
+  class?: string;
+  imgClass?: string;
+  captionClass?: string;
+}
+
+const { foto, lang, sizes, prioridad = false, class: clase, imgClass, captionClass } = Astro.props;
+const t = useTranslations(lang);
+const { imagen, alt, credito } = foto.data;
+---
+
+<figure class={clase}>
+  <Picture
+    src={imagen}
+    alt={alt[lang]}
+    widths={[480, 768, 1024, 1400]}
+    sizes={sizes}
+    formats={['avif', 'webp']}
+    loading={prioridad ? 'eager' : 'lazy'}
+    fetchpriority={prioridad ? 'high' : 'auto'}
+    class={imgClass}
+  />
+  {
+    credito && (
+      <figcaption class:list={['mt-2 text-[0.7rem] tracking-wide text-muted', captionClass]}>
+        {t('photo.credit')}: {credito}
+      </figcaption>
+    )
+  }
+</figure>

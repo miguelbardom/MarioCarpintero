@@ -49,16 +49,19 @@ src/
 │   ├── conciertos/        # un .md por concierto: AAAA-MM-DD-ciudad.md
 │   ├── prensa/            # citas de crítica
 │   ├── bio/               # en.md y es.md (una sola versión por idioma)
+│   ├── fotos/             # un .yaml por foto: imagen, alt { en, es }, crédito, usos
 │   └── media/             # vídeos y audios destacados
 ├── data/
 │   └── site.json          # nombre, redes, emails, management, instrumento
 ├── lib/
-│   └── site.ts            # valida site.json con Zod y exporta `site` tipado
+│   ├── site.ts            # valida site.json con Zod y exporta `site` tipado
+│   ├── formato.ts         # fechas/horas, país, temporada y desfase horario con Intl
+│   └── conciertos.ts      # próximos y pasados (por temporada), ordenados
 ├── i18n/
 │   └── ui.ts              # idiomas, rutas por idioma, textos de interfaz y utilidades
 ├── assets/
 │   └── fotos/             # imágenes optimizadas por Astro
-├── components/            # Header, Footer, PageHeading y la página real de cada sección (HomePage, SectionPage…)
+├── components/            # Header, Footer, PageHeading, ConcertCard, PressQuote, Figure y la página real de cada sección (HomePage, SectionPage…)
 ├── layouts/
 │   └── Base.astro         # <head>, SEO, header, footer, selector de idioma
 ├── pages/
@@ -89,8 +92,8 @@ Los esquemas viven en `src/content.config.ts`; ante cualquier duda, el esquema m
 ### Conciertos (`conciertos`)
 - Nombre de archivo: `AAAA-MM-DD-ciudad.md`.
 - `fecha`: **hora local de la sala, sin zona**, como cadena entre comillas: `"2026-11-21T19:30"`. Nunca convertirla a otra zona para mostrarla.
-- `zonaHoraria`: zona IANA de la sala (por defecto `Europe/Madrid`). Sirve para decidir próximo/pasado y para el `startDate` con desfase de schema.org (aún sin implementar).
-- `pais`: código **ISO 3166-1 alfa-2** en mayúsculas (`ES`, `DE`, `GB`). El nombre del país se mostrará traducido con `Intl.DisplayNames` (aún sin implementar); no escribirlo en el archivo.
+- `zonaHoraria`: zona IANA de la sala (por defecto `Europe/Madrid`). Sirve para decidir próximo/pasado (`lib/conciertos.ts`) y para el `datetime`/`startDate` con desfase (`isoConDesfase()`).
+- `pais`: código **ISO 3166-1 alfa-2** en mayúsculas (`ES`, `DE`, `GB`). El nombre se muestra traducido con `nombrePais()` (`Intl.DisplayNames`); no escribirlo en el archivo.
 - `ciudad`, `sala`: localizables.
 - `rol`: `solista` | `camara` | `recital` | `orquesta` | `otro`
 - `con`: orquesta / ensemble / pianista / director (localizable o lista de localizables)
@@ -127,6 +130,9 @@ Los esquemas viven en `src/content.config.ts`; ante cualquier duda, el esquema m
 ## Fotos
 
 - `alt` descriptivo y obligatorio en todas las imágenes (por idioma).
+- Colección `fotos`: un `.yaml` por foto en `src/content/fotos/` con `imagen` (ruta relativa al archivo en `src/assets/fotos/`, helper `image()`), `alt` `{ en, es }`, `credito`, `usos` (`home` | `galeria` | `presskit`), `hd` (ruta en `/presskit/`, opcional) y `orden`. La foto principal de la Home es la primera con `usos: [home]`.
+- Mostrar siempre con `Figure.astro` (`<Picture>` AVIF/WebP, anchos 480–1400, crédito "Foto/Photo"), pasando un `sizes` acorde a la maqueta y `prioridad` solo para la imagen LCP.
+- Mientras no haya fotos reales: `src/assets/fotos/placeholder-retrato.jpg` (degradado neutro) con su `.yaml` marcado `[PENDIENTE]`.
 - Versiones web optimizadas vía `astro:assets`; versiones en alta resolución solo como descarga en `public/presskit/`.
 
 ## Diseño
@@ -142,6 +148,14 @@ Los esquemas viven en `src/content.config.ts`; ante cualquier duda, el esquema m
 - Mobile-first. Debe verse impecable en móvil, tablet y escritorio.
 - Accesibilidad: contraste AA, navegación por teclado, foco visible, `lang` correcto por página, menú móvil accesible.
 - Evitar animaciones llamativas; transiciones discretas como máximo, respetando `prefers-reduced-motion`.
+
+## Componentes y utilidades reutilizables
+
+- `lib/formato.ts`: `piezasFecha()`, `fechaLarga()`, `mesAnio()` (con `intlLocales` de `ui.ts`: `en-GB`, `es-ES`), `nombrePais()`, `instante()`, `isoConDesfase()`, `temporada()`. Nunca formatear fechas a mano ni con `toLocaleString` sin pasar por aquí.
+- `lib/conciertos.ts`: `proximos(limite?)` y `pasadosPorTemporada()`; la referencia de "ahora" es el momento del build.
+- `ConcertCard.astro`: variante `compacta` (Home: programa abreviado a 2 obras + "+N") y `completa` (Agenda: programa entero, notas, entradas). Usar dentro de `<ul class="divide-y divide-line">`.
+- `PressQuote.astro`: cita en cursiva serif; tamaño `destacada` o `normal`; elige el idioma de la página o el original (con su `lang`).
+- `Figure.astro`: ver Fotos.
 
 ## SEO
 

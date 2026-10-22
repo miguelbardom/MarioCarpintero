@@ -14,6 +14,12 @@ export const locales = Object.keys(languages) as Lang[];
 
 export const defaultLang: Lang = 'en';
 
+/** Locale para `Intl` (fechas, países). */
+export const intlLocales: Record<Lang, string> = {
+  en: 'en-GB',
+  es: 'es-ES',
+};
+
 /** Código de idioma para Open Graph (`og:locale`). */
 export const ogLocales: Record<Lang, string> = {
   en: 'en_GB',
@@ -68,6 +74,17 @@ export const ui = {
     'meta.media.description': '[PENDIENTE: meta description of the media page]',
     'meta.contact.title': 'Contact',
     'meta.contact.description': '[PENDIENTE: meta description of the contact page]',
+    'home.upcoming': 'Upcoming concerts',
+    'home.upcoming.none': 'New dates will be announced soon.',
+    'home.upcoming.all': 'Full schedule',
+    'home.bio.text': 'Read the full biography',
+    'home.media.text': 'Videos and recordings',
+    'concert.cancelled': 'Cancelled',
+    'concert.soldout': 'Sold out',
+    'concert.tickets': 'Tickets',
+    'concert.moreWorks': '+{n} more',
+    'photo.credit': 'Photo',
+    'person.instrument': 'Viola',
     'page.wip': 'This section is under construction.',
     '404.title': 'Page not found',
     '404.text': 'The page you are looking for does not exist or has moved.',
@@ -103,6 +120,17 @@ export const ui = {
     'meta.media.description': '[PENDIENTE: meta description de media]',
     'meta.contact.title': 'Contacto',
     'meta.contact.description': '[PENDIENTE: meta description de contacto]',
+    'home.upcoming': 'Próximos conciertos',
+    'home.upcoming.none': 'Próximamente se anunciarán nuevas fechas.',
+    'home.upcoming.all': 'Agenda completa',
+    'home.bio.text': 'Lee la biografía completa',
+    'home.media.text': 'Vídeos y grabaciones',
+    'concert.cancelled': 'Cancelado',
+    'concert.soldout': 'Agotado',
+    'concert.tickets': 'Entradas',
+    'concert.moreWorks': '+{n} más',
+    'photo.credit': 'Foto',
+    'person.instrument': 'Viola',
     'page.wip': 'Esta sección está en construcción.',
     '404.title': 'Página no encontrada',
     '404.text': 'La página que buscas no existe o ha cambiado de dirección.',

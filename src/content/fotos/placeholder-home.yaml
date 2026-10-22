@@ -1,0 +1,7 @@
+# [PENDIENTE: foto principal de la Home. Sustituir la imagen, el alt y el crédito por los reales.]
+imagen: ../../assets/fotos/placeholder-retrato.jpg
+alt:
+  en: "[PENDIENTE: description of the photo]"
+  es: "[PENDIENTE: descripción de la foto]"
+credito: "[PENDIENTE: autor/a de la foto]"
+usos: [home]

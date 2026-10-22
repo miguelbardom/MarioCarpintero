@@ -1,0 +1,39 @@
+---
+/**
+ * Cita de crítica. Muestra la versión en el idioma de la página si existe;
+ * si no, la original (marcada con su `lang`).
+ */
+import type { CollectionEntry } from 'astro:content';
+import type { Lang } from '../i18n/ui';
+import { mesAnio } from '../lib/formato';
+
+interface Props {
+  critica: CollectionEntry<'prensa'>;
+  lang: Lang;
+  /** `destacada`: tamaño grande para portadas; `normal`: listados. */
+  tamano?: 'destacada' | 'normal';
+}
+
+const { critica, lang, tamano = 'normal' } = Astro.props;
+const { cita, idiomaOriginal, medio, autor, fecha, url } = critica.data;
+const idiomaCita = cita[lang] ? lang : idiomaOriginal;
+const texto = cita[idiomaCita];
+---
+
+<figure class="max-w-3xl">
+  <blockquote cite={url} lang={idiomaCita !== lang ? idiomaCita : undefined}>
+    <p
+      class:list={[
+        'font-serif text-wood-900 italic',
+        tamano === 'destacada' ? 'text-3xl leading-snug sm:text-4xl' : 'text-2xl leading-snug',
+      ]}
+    >
+      <span aria-hidden="true" class="text-gold-700">“</span>{texto}<span aria-hidden="true" class="text-gold-700">”</span>
+    </p>
+  </blockquote>
+  <figcaption class="mt-4 text-xs tracking-[0.12em] text-muted uppercase">
+    {url ? <a href={url} rel="noopener" class="text-wood-700 hover:text-wood-500">{medio}</a> : <span class="text-ink">{medio}</span>}
+    {autor && <span> · {autor}</span>}
+    <span> · {mesAnio(fecha, lang)}</span>
+  </figcaption>
+</figure>

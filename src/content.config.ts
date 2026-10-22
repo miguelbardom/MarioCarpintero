@@ -77,6 +77,27 @@ const bio = defineCollection({
   }),
 });
 
+/* ---------- Fotos ---------- */
+
+const fotos = defineCollection({
+  // Un .yaml por foto; el archivo de imagen vive en src/assets/fotos/.
+  loader: glob({ pattern: '**/*.yaml', base: './src/content/fotos' }),
+  schema: ({ image }) =>
+    z.object({
+      /** Ruta relativa al .yaml, p. ej. "../../assets/fotos/retrato.jpg". */
+      imagen: image(),
+      /** Texto alternativo descriptivo, obligatorio en ambos idiomas. */
+      alt: z.object({ en: z.string().min(1), es: z.string().min(1) }),
+      /** Autor/a de la foto (crédito visible). */
+      credito: z.string().min(1).optional(),
+      /** Dónde se usa: `home` es la foto principal de la portada. */
+      usos: z.array(z.enum(['home', 'galeria', 'presskit'])).default([]),
+      /** Descarga en alta resolución dentro de public/presskit/, p. ej. "/presskit/retrato.jpg". */
+      hd: z.string().startsWith('/presskit/').optional(),
+      orden: z.number().default(0),
+    }),
+});
+
 /* ---------- Media ---------- */
 
 const video = z.object({
@@ -110,4 +131,4 @@ const media = defineCollection({
   schema: z.discriminatedUnion('tipo', [video, audio]),
 });
 
-export const collections = { conciertos, prensa, bio, media };
+export const collections = { conciertos, prensa, bio, fotos, media };

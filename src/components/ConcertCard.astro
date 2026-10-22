@@ -1,0 +1,79 @@
+---
+/**
+ * Concierto en lista. `compacta` (Home): programa abreviado; `completa` (Agenda):
+ * programa entero, notas y entradas.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { localize, useTranslations, type Lang } from '../i18n/ui';
+import { isoConDesfase, nombrePais, piezasFecha } from '../lib/formato';
+import { esPendiente } from '../lib/site';
+
+interface Props {
+  concierto: CollectionEntry<'conciertos'>;
+  lang: Lang;
+  variante?: 'compacta' | 'completa';
+  /** Nivel del encabezado de la sala según la página. */
+  nivel?: 'h3' | 'h4';
+}
+
+const { concierto, lang, variante = 'compacta', nivel = 'h3' } = Astro.props;
+const t = useTranslations(lang);
+const c = concierto.data;
+const f = piezasFecha(c.fecha, lang);
+const Titulo = nivel;
+
+const con = (Array.isArray(c.con) ? c.con : c.con ? [c.con] : []).map((x) => localize(x, lang));
+const maxObras = variante === 'compacta' ? 2 : Infinity;
+const obras = c.programa.slice(0, maxObras);
+const restantes = c.programa.length - obras.length;
+const entradas = variante === 'completa' && c.entradas && !c.cancelado && !c.agotado ? c.entradas : undefined;
+---
+
+<article class:list={['grid grid-cols-[4.5rem_1fr] gap-x-5 py-7 sm:grid-cols-[6rem_1fr] sm:gap-x-8', c.cancelado && 'opacity-70']}>
+  <time datetime={isoConDesfase(c.fecha, c.zonaHoraria)} class="flex flex-col leading-none text-wood-900">
+    <span class="font-serif text-5xl sm:text-6xl">{f.dia}</span>
+    <span class="mt-2 text-xs tracking-[0.12em] text-gold-700 uppercase">{f.mes} {f.anio}</span>
+    <span class="mt-1.5 text-xs text-muted">{f.diaSemana} · {f.hora}</span>
+  </time>
+
+  <div class="min-w-0">
+    <p class="text-xs tracking-[0.12em] text-gold-700 uppercase">
+      {localize(c.ciudad, lang)} · {nombrePais(c.pais, lang)}
+    </p>
+    <Titulo class:list={['mt-1.5 font-serif text-2xl sm:text-3xl', c.cancelado && 'line-through decoration-1']}>
+      {localize(c.sala, lang)}
+    </Titulo>
+    {
+      (c.cancelado || c.agotado) && (
+        <p class="mt-2">
+          <span class="inline-block border border-wood-700 px-2 py-0.5 text-[0.7rem] tracking-[0.12em] text-wood-700 uppercase">
+            {c.cancelado ? t('concert.cancelled') : t('concert.soldout')}
+          </span>
+        </p>
+      )
+    }
+    {con.length > 0 && <p class="mt-2 text-sm text-ink">{con.join(' · ')}</p>}
+    {
+      obras.length > 0 && (
+        <ul class="mt-3 space-y-1 text-sm text-muted">
+          {obras.map((o) => (
+            <li>
+              <span class="text-ink">{o.compositor}</span> — <span class="italic">{localize(o.obra, lang)}</span>
+            </li>
+          ))}
+          {restantes > 0 && <li>{t('concert.moreWorks').replace('{n}', String(restantes))}</li>}
+        </ul>
+      )
+    }
+    {variante === 'completa' && c.notas && <p class="mt-3 text-sm text-muted">{localize(c.notas, lang)}</p>}
+    {
+      entradas && !esPendiente(entradas) && (
+        <p class="mt-4">
+          <a href={entradas} rel="noopener" class="text-sm tracking-[0.12em] text-wood-700 uppercase hover:text-wood-500">
+            {t('concert.tickets')} <span aria-hidden="true">→</span>
+          </a>
+        </p>
+      )
+    }
+  </div>
+</article>
