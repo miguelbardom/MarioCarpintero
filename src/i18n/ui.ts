@@ -12,7 +12,6 @@ export type Lang = keyof typeof languages;
 
 export const locales = Object.keys(languages) as Lang[];
 
-// [PENDIENTE: confirmar idioma por defecto (en | es)]
 export const defaultLang: Lang = 'en';
 
 /** Código de idioma para Open Graph (`og:locale`). */

@@ -18,7 +18,7 @@ Secciones: Home · Bio · Schedule · Press · Media · Contact
 - **lite-youtube-embed** para vídeos (y equivalente ligero para Vimeo si hace falta)
 - **Fontsource** (variables) para tipografías alojadas localmente: `@fontsource-variable/cormorant-garamond` (normal + `wght-italic.css`) e `@fontsource-variable/inter`, importadas en `Base.astro`
 - `@astrojs/sitemap`
-- Formulario de contacto: **[PENDIENTE: Formspree | Web3Forms]** (aún no implementado)
+- Formulario de contacto: **Web3Forms** (envío directo desde el navegador a su API; aún no implementado)
 
 ### Restricciones de stack
 
@@ -33,7 +33,7 @@ Secciones: Home · Bio · Schedule · Press · Media · Contact
 - `site` en `astro.config.mjs`: provisionalmente `https://www.example.com` — **[PENDIENTE: dominio definitivo]**.
 - URLs con barra final (`trailingSlash: 'always'`, `build.format: 'directory'`). Mantener coherente en todos los enlaces internos: generarlos siempre con `localizePath()` (nunca escribir rutas a mano).
 - **Bilingüe desde el inicio** con el enrutado i18n de Astro:
-  - Idiomas: `en` y `es`. Idioma por defecto: `en` provisional — **[PENDIENTE: confirmar en | es]**. Si cambia, actualizar a la vez `DEFAULT_LOCALE` en `astro.config.mjs` y `defaultLang` en `src/i18n/ui.ts` (igual con la lista de idiomas: `LOCALES` ↔ `languages`).
+  - Idiomas: `en` y `es`. Idioma por defecto: **`en`**. Si alguna vez cambia, actualizar a la vez `DEFAULT_LOCALE` en `astro.config.mjs` y `defaultLang` en `src/i18n/ui.ts` (igual con la lista de idiomas: `LOCALES` ↔ `languages`).
   - `prefixDefaultLocale: true`: todas las páginas llevan prefijo `/en/...` y `/es/...`. La raíz `/` es `src/pages/index.astro`, una redirección estática (meta refresh, `noindex`) al idioma por defecto, excluida del sitemap.
   - **Slugs traducidos**: cada sección tiene su segmento por idioma en `routes` de `src/i18n/ui.ts` (`/en/schedule/` ↔ `/es/agenda/`, `/en/bio/` ↔ `/es/biografia/`, `/en/contact/` ↔ `/es/contacto/`…). Una sección nueva se añade ahí (y en `navItems` si va en el menú) y con un archivo en `pages/en/` y otro en `pages/es/`.
   - El selector de idioma y los `hreflang` usan la prop `route` (`RouteKey`) que recibe `Base.astro`; toda página de sección debe pasarla.
@@ -132,7 +132,7 @@ Los esquemas viven en `src/content.config.ts`; ante cualquier duda, el esquema m
 ## Diseño
 
 - Estética: estilo clásico, sobrio, luminoso. Mucho espacio en blanco, fotografía protagonista.
-- Tipografía: **Cormorant Garamond** para títulos (`font-serif`, peso 500; cursiva disponible para citas) + **Inter** para texto (`font-sans`).
+- Tipografía (confirmada): **Cormorant Garamond** para títulos (`font-serif`, peso 500; cursiva disponible para citas) + **Inter** para texto (`font-sans`).
 - Paleta: blanco, detalles asociados a un instrumento como la viola, como el marrón y el dorado. Tokens en `@theme` de `global.css`; usar siempre estos, no colores sueltos:
   - `paper` (fondo), `ink` (texto), `muted` (texto secundario), `line` (bordes)
   - `wood-900` / `wood-700` / `wood-500` (títulos, enlaces, hover)
